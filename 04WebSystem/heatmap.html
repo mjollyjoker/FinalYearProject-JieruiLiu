@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Heatmap</title>
+  <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+  <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?libraries=visualization,SymbolPath"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.8/src/markerwithlabel.js"></script>
+  <style>
+    body {
+      background-color: white;
+    }
+    .navbar {
+      background-color: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.6);
+      border: 0;
+      margin-bottom: 0;
+    }
+    .navbar-header span {
+      padding-left: 30px;
+      padding-right: 50px;
+      color: white;
+      font-family: myriad;
+    }
+    .nav .image {
+      padding-right: 25px;
+      color: white;
+    }
+    .nav .navcontent {
+      color: white;
+      font-family: myriad;
+      font-size: 15px;
+    }
+    .nav .navcontent:hover {
+      color: gray;
+    }
+    .nav li {
+      padding-right: 30px;
+    }
+    html, body, #map-canvas {
+      height: 100%;
+      margin: 0px;
+      padding: 0px
+    }
+    .labels {
+      width: 250px;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    #dataset_panel {
+      position: absolute;
+      margin-top: 65px;
+      margin-left: 15px;
+      z-index: 1000;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+  </style>
+  <script>
+    var hostAddr = 'http://localhost:5984'
+    var map;
+      // 2D array content
+      // [0] tweet coordintes : google.maps.LatLng
+      // [1] tweet text : string
+      // [2] heatmap layer : google.maps.visualization.HeatmapLayer
+      var crimeAgainstPerson = [[],[],[]]
+      var crimeAgainstProperty = [[],[],[]]
+      var crimeDrugOffence = [[],[],[]]
+      var crimeOther = [[],[],[]]
+      var clusterCentre = [[],[]]
+      var fullHeatmap;
+      var markerLabelAgstPeron = []
+      var markerLabelAgstProperty = []
+      var markerLabelDrugOffence = []
+      var markerLabelCrimeOther = []
+      var markerLabelClusterCentre = []
+      var showTweetsOn = false;
+      var showClusterOn = false;
+      var currentDataSet = 0;
+
+      $(function(){
+        $.ajax({
+          url: hostAddr + '/combined/_design/keywords/_view/allKeywords_against_person?group_level=9',
+          type: 'get',
+          dataType: 'jsonp',
+          success: function(data) {
+            for(var i = 0; i < data.rows.length; i++){
+              myCoord = data.rows[i].key[1].coordinates;
+              crimeAgainstPerson[0].push(new google.maps.LatLng(myCoord[1],myCoord[0]));
+              crimeAgainstPerson[1].push(data.rows[i].key[3]);
+            }
+          }
+        });
+
+        $.ajax({
+          url: hostAddr + '/combined/_design/keywords/_view/allKeywords_against_property?group_level=9',
+          type: 'get',
+          dataType: 'jsonp',
+          success: function(data) {
+            for(var i = 0; i < data.rows.length; i++){
+              myCoord = data.rows[i].key[1].coordinates;
+              crimeAgainstProperty[0].push(new google.maps.LatLng(myCoord[1],myCoord[0]));
+              crimeAgainstProperty[1].push(data.rows[i].key[3]);
+            }
+          }
+        });
+
+        $.ajax({
+          url: hostAddr + '/combined/_design/keywords/_view/allKeywords_drug_offence?group_level=9',
+          type: 'get',
+          dataType: 'jsonp',
+          success: function(data) {
+            for(var i = 0; i < data.rows.length; i++){
+              myCoord = data.rows[i].key[1].coordinates;
+              crimeDrugOffence[0].push(new google.maps.LatLng(myCoord[1],myCoord[0]));
+              crimeDrugOffence[1].push(data.rows[i].key[3]);
+            }
+          }
+        });
+
+        $.ajax({
+          url: hostAddr + '/combined/_design/keywords/_view/allKeywords_crime_other?group_level=9',
+          type: 'get',
+          dataType: 'jsonp',
+          success: function(data) {
+            for(var i = 0; i < data.rows.length; i++){
+              myCoord = data.rows[i].key[1].coordinates;
+              crimeOther[0].push(new google.maps.LatLng(myCoord[1],myCoord[0]));
+              crimeOther[1].push(data.rows[i].key[3]);
+            }
+          }
+        });
+
+        $.ajax({
+          url: hostAddr + '/cluster_centre/_all_docs?include_docs=true',
+          type: 'get',
+          dataType: 'jsonp',
+          success: function(data) {
+            for(var i = 0; i < data.rows.length; i++){
+              myCoord = data.rows[i].doc.coordinates;
+              clusterCentre[0].push(new google.maps.LatLng(myCoord[1],myCoord[0]));
+              clusterCentre[1].push(data.rows[i].doc.count.toString() + ' tweets belong to this cluster');
+            }
+          }
+        });
+
+      });
+
+      function initialize() {
+        var melbourneCoor = new google.maps.LatLng(-37.8151381,144.9961886)
+        var mapOptions = {
+          zoom: 12,
+          center: melbourneCoor,
+          mapTypeId: google.maps.MapTypeId.SATELLITE,
+          zoomControlOptions: {
+            position: google.maps.ControlPosition.RIGHT_CENTER
+          },
+          panControl: false
+        };
+
+        map = new google.maps.Map(document.getElementById('map-canvas'),
+          mapOptions);
+
+        var pointArray1 = new google.maps.MVCArray(crimeAgainstPerson[0]);
+        crimeAgainstPerson[2] = new google.maps.visualization.HeatmapLayer({
+          data: pointArray1,
+          maxIntensity: Math.ceil(crimeAgainstPerson[0].length/500)
+        });
+
+        var pointArray2 = new google.maps.MVCArray(crimeAgainstProperty[0]);
+        crimeAgainstProperty[2] = new google.maps.visualization.HeatmapLayer({
+          data: pointArray2,
+          maxIntensity: Math.ceil(crimeAgainstProperty[0].length/500)
+        });
+
+        var pointArray3 = new google.maps.MVCArray(crimeDrugOffence[0]);
+        crimeDrugOffence[2] = new google.maps.visualization.HeatmapLayer({
+          data: pointArray3,
+          maxIntensity: Math.ceil(crimeDrugOffence[0].length/500)
+        });
+
+        var pointArray4 = new google.maps.MVCArray(crimeOther[0]);
+        crimeOther[2] = new google.maps.visualization.HeatmapLayer({
+          data: pointArray4,
+          maxIntensity: Math.ceil(crimeOther[0].length/500)
+        });
+
+        allData = crimeAgainstPerson[0].concat(crimeAgainstProperty[0]);
+        allData = allData.concat(crimeDrugOffence[0]);
+        allData = allData.concat(crimeOther[0]);
+        var pointArray5 = new google.maps.MVCArray(allData);
+        fullHeatmap = new google.maps.visualization.HeatmapLayer({
+          data: pointArray5,
+          maxIntensity: Math.ceil(allData.length/600)
+        });
+        fullHeatmap.setMap(map);
+
+        markerLoop(crimeAgainstPerson, markerLabelAgstPeron, "#ffffff");
+        markerLoop(crimeAgainstProperty, markerLabelAgstProperty, "#ffffff");
+        markerLoop(crimeDrugOffence, markerLabelDrugOffence, "#ffffff");
+        markerLoop(crimeOther, markerLabelCrimeOther, "#ffffff");
+        markerLoop(clusterCentre, markerLabelClusterCentre, "#ff0000");
+      }
+
+      function markerLoop(inputArray, storage, colorChoice){
+        var number = Math.ceil(inputArray[0].length/100);
+        for (var i = 0; i < inputArray[0].length; i ++){
+          if (i % number == 0){
+            var markerLabelPair = generateMarkers(inputArray[0][i], inputArray[1][i], colorChoice);
+            storage.push(markerLabelPair);
+          }
+        }
+      }
+
+      function generateMarkers(latLngs, titleStrings, colorChoice){
+        var marker = new google.maps.Marker({
+          position: latLngs,
+          map: map,
+          visible: false,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillOpacity: 0.6,
+            fillColor: colorChoice,
+            strokeOpacity: 0.8,
+            strokeColor: '#000000',
+            strokeWeight: 2.0, 
+            scale: 5 //pixels
+          }
+        });
+
+        var label = new MarkerWithLabel({
+          position: new google.maps.LatLng(0,0),
+          draggable: false,
+          raiseOnDrag: false,
+          map: map,
+          labelContent: titleStrings,
+          labelAnchor: new google.maps.Point(-20, 20),
+          labelClass: "labels", // the CSS class for the label
+          labelStyle: {opacity: 1.0},
+          icon: "http://placehold.it/1x1",
+          visible: false
+        });
+        google.maps.event.addListener(marker, "mouseover", function(event) {
+          label.setPosition(event.latLng);
+          label.setVisible(true);
+        });            
+        google.maps.event.addListener(marker, "mouseout", function(event) {
+          label.setVisible(false);
+        });
+        return [marker, label];
+      }
+
+      function toggleHeatmapFull() {
+        currentDataSet = 0;
+        fullHeatmap.setMap(map);
+        crimeAgainstPerson[2].setMap(null);
+        crimeAgainstProperty[2].setMap(null);
+        crimeDrugOffence[2].setMap(null);
+        crimeOther[2].setMap(null);
+        if(showTweetsOn){
+          toggleMarkerFull(true);
+        }else{
+          toggleMarkerFull(false);
+        }
+      }
+      function toggleHeatmapAgstPerson() {
+        currentDataSet = 1;
+        fullHeatmap.setMap(null);
+        crimeAgainstPerson[2].setMap(map);
+        crimeAgainstProperty[2].setMap(null);
+        crimeDrugOffence[2].setMap(null);
+        crimeOther[2].setMap(null);
+        toggleMarkerFull(false);
+        if(showTweetsOn){
+          toggleMarkerAgstPerson(true);
+        }
+      }
+      function toggleHeatmapAgstProperty() {
+        currentDataSet = 2;
+        fullHeatmap.setMap(null);
+        crimeAgainstPerson[2].setMap(null);
+        crimeAgainstProperty[2].setMap(map);
+        crimeDrugOffence[2].setMap(null);
+        crimeOther[2].setMap(null);
+        toggleMarkerFull(false);
+        if(showTweetsOn){
+          toggleMarkerAgstProperty(true);
+        }
+      }
+      function toggleHeatmapDrugOffence() {
+        currentDataSet = 3;
+        fullHeatmap.setMap(null);
+        crimeAgainstPerson[2].setMap(null);
+        crimeAgainstProperty[2].setMap(null);
+        crimeDrugOffence[2].setMap(map);
+        crimeOther[2].setMap(null);
+        toggleMarkerFull(false);
+        if(showTweetsOn){
+          toggleMarkerDrugOffence(true);
+        }
+      }
+      function toggleHeatmapCrimeOther() {
+        currentDataSet = 4;
+        fullHeatmap.setMap(null);
+        crimeAgainstPerson[2].setMap(null);
+        crimeAgainstProperty[2].setMap(null);
+        crimeDrugOffence[2].setMap(null);
+        crimeOther[2].setMap(map);
+        toggleMarkerFull(false);
+        if(showTweetsOn){
+          toggleMarkerCrimeOther(true);
+        }
+      }
+      function toggleMarkerFull(onOff) {
+        toggleMarkerAgstPerson(onOff);
+        toggleMarkerAgstProperty(onOff);
+        toggleMarkerDrugOffence(onOff);
+        toggleMarkerCrimeOther(onOff);
+      }
+      function toggleMarkerAgstPerson(onOff) {
+        for (var i = 0; i < markerLabelAgstPeron.length; i++){
+          markerLabelAgstPeron[i][0].setVisible(onOff);
+        }
+      }
+      function toggleMarkerAgstProperty(onOff) {
+        for (var i = 0; i < markerLabelAgstProperty.length; i++){
+          markerLabelAgstProperty[i][0].setVisible(onOff);
+        }
+      }
+      function toggleMarkerDrugOffence(onOff) {
+        for (var i = 0; i < markerLabelDrugOffence.length; i++){
+          markerLabelDrugOffence[i][0].setVisible(onOff);
+        }
+      }
+      function toggleMarkerCrimeOther(onOff) {
+        for (var i = 0; i < markerLabelCrimeOther.length; i++){
+          markerLabelCrimeOther[i][0].setVisible(onOff);
+        }
+      }
+      function toggleMarkerCluster(onOff){
+        for (var i = 0; i < markerLabelClusterCentre.length; i++){
+          markerLabelClusterCentre[i][0].setVisible(onOff);
+        }
+      }
+      function showTweets(){
+        showTweetsOn = !showTweetsOn;
+        switch(currentDataSet){
+          case 0:
+            toggleMarkerFull(showTweetsOn);
+            break;
+          case 1:
+            toggleMarkerAgstPerson(showTweetsOn);
+            break;
+          case 2:
+            toggleMarkerAgstProperty(showTweetsOn);
+            break;
+          case 3:
+            toggleMarkerDrugOffence(showTweetsOn);
+            break;
+          case 4:
+            toggleMarkerCrimeOther(showTweetsOn);  
+            break;
+        }
+      }
+      function showCluster(){
+        showClusterOn = !showClusterOn;
+        toggleMarkerCluster(showClusterOn);
+      }
+
+      google.maps.event.addDomListener(window, 'load', initialize);
+
+      </script>
+    </head>
+
+    <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand"><span>Melbourne</span></a>
+        </div>
+        <div>
+          <ul class="nav navbar-nav">
+            <li><a href="general.html"><span class="image glyphicon glyphicon glyphicon-th-large"></span><span class="navcontent">General</span></a></li>
+            <li><a href="crime_category.html"><span class="image glyphicon glyphicon-list-alt"></span><span class="navcontent">Category</span></a></li>
+            <li><a href="trendline.html"><span class="image glyphicon glyphicon-stats"></span><span class="navcontent">Trendline</span></a></li>
+            <li><a href="compare.html"><span class="image glyphicon glyphicon-transfer"></span><span class="navcontent">Compare</span></a></li>
+            <li><a href="heatmap.html"><span class="image glyphicon glyphicon-fire"></span><span class="navcontent">Heatmap</span></a></li>
+            <li><a href="choropleth.html"><span class="image glyphicon glyphicon-globe"></span><span class="navcontent">Choropleth</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+
+    <div id="dataset_panel">
+      <b>Data set selection</b><br>
+      <input type="radio" onclick="toggleHeatmapAgstPerson()" name="heatmapData" value="1"> Crime Against Person<br>
+      <input type="radio" onclick="toggleHeatmapAgstProperty()" name="heatmapData" value="2"> Crime Against Property<br>
+      <input type="radio" onclick="toggleHeatmapDrugOffence()" name="heatmapData" value="3"> Drug Offence<br>
+      <input type="radio" onclick="toggleHeatmapCrimeOther()" name="heatmapData" value="4"> Other Crime<br>
+      <input type="radio" onclick="toggleHeatmapFull()" name="heatmapData" value="0" checked> All<br><br>
+      <input type="checkbox" onclick="showTweets()" name="showTweets" value="show">Show random tweets<br>
+      <input type="checkbox" onclick="showCluster()" name="showCluster" value="show">Show cluster centre<br>
+    </div>
+      <div id="map-canvas"></div>
+    </body>
+    </html>

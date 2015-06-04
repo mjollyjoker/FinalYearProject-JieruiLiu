@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <title>Category</title>
+   <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+   <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+   <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+   <script src="http://code.highcharts.com/highcharts.js"></script>
+   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=visualization"></script>
+   <script src="http://code.highcharts.com/modules/exporting.js"></script>
+   <script src="http://code.highcharts.com/modules/drilldown.js"></script>
+
+   <style type="text/css">
+      body {
+         background-image: url("images/background.jpg");
+         background-attachment: fixed;
+         background-repeat: no-repeat;
+         background-size: 100%;
+      }
+
+      .navbar {
+         background-color: rgba(0,0,0,0.6);
+         background: rgba(0,0,0,0.6);
+         border: 0;
+      }
+
+      .navbar-header span {
+          padding-left: 30px;
+         padding-right: 50px;
+         color: white;
+         font-family: myriad;
+      }
+
+      .nav .image {
+         padding-right: 25px;
+         color: white;
+      }
+
+      .nav .navcontent {
+         color: white;
+         font-family: myriad;
+         font-size: 15px;
+      }
+
+      .nav .navcontent:hover {
+         color: gray;
+      }
+
+      .nav li {
+         padding-right: 30px;
+      }
+
+      #container {
+        width: 1000px;
+        height: 550px;
+        margin: 0 auto;
+        margin-top: 50px;
+      }
+
+   </style>
+
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand"><span>Melbourne</span></a>
+        </div>
+        <div>
+          <ul class="nav navbar-nav">
+            <li><a href="general.html"><span class="image glyphicon glyphicon glyphicon-th-large"></span><span class="navcontent">General</span></a></li>
+            <li><a href="crime_category.html"><span class="image glyphicon glyphicon-list-alt"></span><span class="navcontent">Category</span></a></li>
+            <li><a href="trendline.html"><span class="image glyphicon glyphicon-stats"></span><span class="navcontent">Trendline</span></a></li>
+            <li><a href="compare.html"><span class="image glyphicon glyphicon-transfer"></span><span class="navcontent">Compare</span></a></li>
+            <li><a href="heatmap.html"><span class="image glyphicon glyphicon-fire"></span><span class="navcontent">Heatmap</span></a></li>
+            <li><a href="choropleth.html"><span class="image glyphicon glyphicon-globe"></span><span class="navcontent">Choropleth</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+   <div id="container" style="margin-top: 120px; width: 900px; height: 500px"></div>
+
+   <script>
+
+$(function () {
+    var hostAddr = 'http://localhost:5984'
+    var crimeData = [{      
+                        id: 'crimeAgstPerson',
+                        name: 'Crime Against Person',
+                        data: []
+                    },{
+                        id: 'crimeAgstProperty',
+                        name: 'Crime Against Property',
+                        data: []
+                    },{
+                        id: 'drugOffence',
+                        name: 'Drug Offence',
+                        data: []
+                    },{
+                        id: 'otherCrime',
+                        name: 'Other Crime',
+                        data: []
+                    }];
+    var mainPie = [];
+    var totalTweets = 0;
+
+    $.ajax({
+        url: hostAddr + '/combined/_design/keywords/_view/allKeywords_against_person?group_level=1',
+        type: 'get',
+        dataType: 'jsonp',
+        success: function(data) {
+            var subTotal = 0;
+            for(var i = 0; i < data.rows.length; i++){
+                var sentiment = "neutral";
+                sentiment = (data.rows[i].key[0] == -1 ? "negative" : "neutral");
+                if (sentiment == "neutral"){
+                  sentiment = (data.rows[i].key[0] == 1 ? "positive" : "neutral");
+                }
+                crimeData[0].data.push([
+                    sentiment,
+                    data.rows[i].value,
+                    subTotal += data.rows[i].value
+                ]);
+            }
+            mainPie.push({
+                name : 'Crime Against Person',
+                y : subTotal,
+                drilldown: 'crimeAgstPerson'
+            });
+            for (var i = 0; i < crimeData[0].data.length; i ++){
+                crimeData[0].data[i][1] = crimeData[0].data[i][1]/subTotal*100;
+            }
+            totalTweets += subTotal;
+            getDataAgstProperty();
+        }
+    });
+
+    function getDataAgstProperty(){
+        $.ajax({
+            url: hostAddr + '/combined/_design/keywords/_view/allKeywords_against_property?group_level=1',
+            type: 'get',
+            dataType: 'jsonp',
+            success: function(data) {
+                var subTotal = 0;
+                for(var i = 0; i < data.rows.length; i++){
+                    var sentiment = "neutral";
+                    sentiment = (data.rows[i].key[0] == -1 ? "negative" : "neutral");
+                    if (sentiment == "neutral"){
+                      sentiment = (data.rows[i].key[0] == 1 ? "positive" : "neutral");
+                    }
+                    crimeData[1].data.push([
+                        sentiment,
+                        data.rows[i].value,
+                        subTotal += data.rows[i].value
+                    ]);
+                }
+                mainPie.push({
+                    name : 'Crime Against Property',
+                    y : subTotal,
+                    drilldown: 'crimeAgstProperty'
+                });
+                for (var i = 0; i < crimeData[1].data.length; i ++){
+                    crimeData[1].data[i][1] = crimeData[1].data[i][1]/subTotal*100;
+                }
+                totalTweets += subTotal;
+                getDataDrug();
+            }
+        });
+    }
+
+    function getDataDrug(){
+        $.ajax({
+            url: hostAddr + '/combined/_design/keywords/_view/allKeywords_drug_offence?group_level=1',
+            type: 'get',
+            dataType: 'jsonp',
+            success: function(data) {
+                var subTotal = 0;
+                for(var i = 0; i < data.rows.length; i++){
+                    var sentiment = "neutral";
+                    sentiment = (data.rows[i].key[0] == -1 ? "negative" : "neutral");
+                    if (sentiment == "neutral"){
+                      sentiment = (data.rows[i].key[0] == 1 ? "positive" : "neutral");
+                    }
+                    crimeData[2].data.push([
+                        sentiment,
+                        data.rows[i].value,
+                        subTotal += data.rows[i].value
+                    ]);
+                }
+                mainPie.push({
+                    name : 'Drug Offence',
+                    y : subTotal,
+                    drilldown: 'drugOffence'
+                });
+                for (var i = 0; i < crimeData[2].data.length; i ++){
+                    crimeData[2].data[i][1] = crimeData[2].data[i][1]/subTotal*100;
+                }
+                totalTweets += subTotal;
+                getDataOther();
+            }
+        });
+    }
+
+    function getDataOther(){
+        $.ajax({
+            url: hostAddr + '/combined/_design/keywords/_view/allKeywords_crime_other?group_level=1',
+            type: 'get',
+            dataType: 'jsonp',
+            success: function(data) {
+                var subTotal = 0;
+                for(var i = 0; i < data.rows.length; i++){
+                    var sentiment = "neutral";
+                    sentiment = (data.rows[i].key[0] == -1 ? "negative" : "neutral");
+                    if (sentiment == "neutral"){
+                      sentiment = (data.rows[i].key[0] == 1 ? "positive" : "neutral");
+                    }
+                    crimeData[3].data.push([
+                        sentiment,
+                        data.rows[i].value,
+                        subTotal += data.rows[i].value
+                    ]);
+                }
+                mainPie.push({
+                    name : 'Other Crime',
+                    y : subTotal,
+                    drilldown: 'otherCrime'
+                });
+                for (var i = 0; i < crimeData[3].data.length; i ++){
+                    crimeData[3].data[i][1] = crimeData[3].data[i][1]/subTotal*100;
+                }
+                totalTweets += subTotal;
+                drawChart();
+            }
+        });
+    }
+
+
+    function drawChart(){
+        for (var i = 0; i < mainPie.length; i++){
+            mainPie[i].y = mainPie[i].y/totalTweets*100;
+        }
+
+        // Create the chart
+        $('#container').highcharts({
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: 'Crime category distribution'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    }
+                }
+            },
+
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+            },
+            series: [{
+                name: 'Brands',
+                colorByPoint: true,
+                data: mainPie
+            }],
+            drilldown: {
+                series: crimeData
+            }
+        });
+    }
+});
+
+         
+   </script>
+
+</body>
+</html>        
