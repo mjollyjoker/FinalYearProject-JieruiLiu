@@ -1,3 +1,9 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 # This method takes will crawl census data from government website
 # Regex is used for match each of the attribute
 # result information will then be stored to a csv file

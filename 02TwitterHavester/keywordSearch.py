@@ -1,3 +1,9 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 # This program will perform a twitter API search for a desinated keyword
 # The search result will be store to couchdb
 

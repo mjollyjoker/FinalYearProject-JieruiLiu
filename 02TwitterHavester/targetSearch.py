@@ -1,3 +1,11 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
+# This program will fetch followers of official Twitter account 
+# 'VictoriaPolice' and perform timeline search on the followers
 import sys
 import re
 import tweepy

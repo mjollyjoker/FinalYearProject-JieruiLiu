@@ -1,3 +1,9 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 # this function will transfer mapreduced result to another database
 # It will read information from a couchDB
 # It will then store results to corresponding documents in another database

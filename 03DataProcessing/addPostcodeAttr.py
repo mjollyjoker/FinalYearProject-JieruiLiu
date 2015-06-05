@@ -1,3 +1,9 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 # This file uses google reverse geocoding function to convert a given coordinates to postcode
 # The coordinate is an attribute from Tweet which is fetched from couchDB
 # After a post code is returned from google service, a new attribute "postcode" will be added to Tweet

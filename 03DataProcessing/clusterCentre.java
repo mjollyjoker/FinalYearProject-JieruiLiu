@@ -1,3 +1,9 @@
+// Author :  Jierui Liu
+// Student Number : 678819
+// Supervisor : Prof. Richard Sinnott
+// COMP90055 COMPUTING PROJECT
+// Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

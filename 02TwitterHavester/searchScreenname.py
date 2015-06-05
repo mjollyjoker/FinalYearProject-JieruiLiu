@@ -1,3 +1,9 @@
+# Author :  Jierui Liu
+# Student Number : 678819
+# Supervisor : Prof. Richard Sinnott
+# COMP90055 COMPUTING PROJECT
+# Project Title : Twitter-related Analysis of Crime data for Melbourne
+
 # This program will read a file that containing the screen_names and search the user timeline
 # Searched timeline Tweets will validate before store to couchDB
 
