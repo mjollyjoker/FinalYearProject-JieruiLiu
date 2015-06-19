@@ -1,0 +1,95 @@
+    body {
+      background-color: white;
+    }
+    .navbar {
+      background-color: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.6);
+      border: 0;
+      margin-bottom: 0;
+    }
+    .navbar-header span {
+      padding-left: 30px;
+      padding-right: 50px;
+      color: white;
+      font-family: myriad;
+    }
+    .nav .image {
+      padding-right: 25px;
+      color: white;
+    }
+    .nav .navcontent {
+      color: white;
+      font-family: myriad;
+      font-size: 15px;
+    }
+    .nav .navcontent:hover {
+      color: gray;
+    }
+    .nav li {
+      padding-right: 30px;
+    }
+    html, body, #map-canvas {
+      height: 100%;
+      margin: 0px;
+      padding: 0px
+    }
+    .labels {
+      width: 250px;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    #dataset_panel_heatmap {
+      position: absolute;
+      margin-top: 65px;
+      margin-left: 15px;
+      z-index: 1000;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    #data_display_panel{
+        position: absolute;
+        width: 260px;
+        margin-top: 65px;
+        margin-left: 15px;
+        z-index: 1000;
+        padding: 6px 8px;
+        font: 14px/16px Arial, Helvetica, sans-serif;
+        background: white;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        border-radius: 5px;
+    }
+    #dataset_panel_choropleth {
+      position: absolute;
+      margin-top: 310px;
+      margin-left: 15px;
+      z-index: 1000;
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    #data_legend_outer{
+      position: absolute;
+      margin-top: 520px;
+      margin-left: 15px;
+      z-index: 1000;
+    }
+    #data_legend_panel{
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }

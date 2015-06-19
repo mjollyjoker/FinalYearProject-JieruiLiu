@@ -1,0 +1,86 @@
+      body {
+         background-image: url("images/background.jpg");
+         background-attachment: fixed;
+         background-repeat: no-repeat;
+         background-size: 100%;
+      }
+
+      .navbar {
+         background-color: rgba(0,0,0,0.6);
+         background: rgba(0,0,0,0.6);
+         border: 0;
+      }
+
+      .navbar-header span {
+          padding-left: 30px;
+         padding-right: 50px;
+         color: white;
+         font-family: myriad;
+      }
+
+      .nav .image {
+         padding-right: 25px;
+         color: white;
+      }
+
+      .nav .navcontent {
+         color: white;
+         font-family: myriad;
+         font-size: 15px;
+      }
+
+      .nav .navcontent:hover {
+         color: gray;
+      }
+
+      .nav li {
+         padding-right: 30px;
+      }
+
+      .main {
+         width: 1250px;
+         margin-left: 100px;
+      }
+
+      .lefttab {
+         width: auto;
+         height: auto;
+         margin-top: 150px;
+         margin-right: 100px;
+         float: left;
+         border-radius: 10px;
+         background-color: rgba(0,0,0,0.4);
+      }
+
+      #myTab {
+         width: 250px;
+         border-radius: 10px;
+      }
+
+      #myTab li {
+         padding: 0;
+      }
+
+      #myTab a {
+         text-align: center;
+         border-radius: 10px;
+         font-family: myriad;
+         font-size: 15px;
+      }
+
+      #myTab a:hover {
+         background-color: rgba(0,0,0,0.2);
+      }
+
+      #myTabContent {
+         width: 900px;
+         margin-top: 60px;
+         float: right;
+      }
+
+      #container {
+        width: 1000px;
+        height: 550px;
+        margin: 0 auto;
+        margin-top: 50px;
+      }

@@ -8,63 +8,7 @@
   <script src="https://maps.googleapis.com/maps/api/js?libraries=visualization,SymbolPath"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
   <script src="http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.8/src/markerwithlabel.js"></script>
-  <style>
-    body {
-      background-color: white;
-    }
-    .navbar {
-      background-color: rgba(0,0,0,0.6);
-      background: rgba(0,0,0,0.6);
-      border: 0;
-      margin-bottom: 0;
-    }
-    .navbar-header span {
-      padding-left: 30px;
-      padding-right: 50px;
-      color: white;
-      font-family: myriad;
-    }
-    .nav .image {
-      padding-right: 25px;
-      color: white;
-    }
-    .nav .navcontent {
-      color: white;
-      font-family: myriad;
-      font-size: 15px;
-    }
-    .nav .navcontent:hover {
-      color: gray;
-    }
-    .nav li {
-      padding-right: 30px;
-    }
-    html, body, #map-canvas {
-      height: 100%;
-      margin: 0px;
-      padding: 0px
-    }
-    .labels {
-      width: 250px;
-      padding: 6px 8px;
-      font: 14px/16px Arial, Helvetica, sans-serif;
-      background: white;
-      background: rgba(255,255,255,0.8);
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      border-radius: 5px;
-    }
-    #dataset_panel {
-      position: absolute;
-      margin-top: 65px;
-      margin-left: 15px;
-      z-index: 1000;
-      padding: 6px 8px;
-      font: 14px/16px Arial, Helvetica, sans-serif;
-      background: white;
-      background: rgba(255,255,255,0.8);
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      border-radius: 5px;
-    }
+  <link rel="stylesheet" type="text/css" href="style_maps.css"/>
   </style>
   <script>
     var hostAddr = 'http://115.146.93.135:5984'
@@ -402,7 +346,7 @@
     </nav>
 
 
-    <div id="dataset_panel">
+    <div id="dataset_panel_heatmap">
       <b>Data set selection</b><br>
       <input type="radio" onclick="toggleHeatmapAgstPerson()" name="heatmapData" value="1"> Crime Against Person<br>
       <input type="radio" onclick="toggleHeatmapAgstProperty()" name="heatmapData" value="2"> Crime Against Property<br>

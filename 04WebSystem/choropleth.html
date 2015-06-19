@@ -8,88 +8,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
     <script src="http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.5/src/markerwithlabel_packed.js"></script>
-    <style type="text/css">
-      body {
-         background-color: white;
-      }
-      .navbar {
-         background-color: rgba(0,0,0,0.6);
-         background: rgba(0,0,0,0.6);
-         border: 0;
-         margin-bottom: 0;
-      }
-      .navbar-header span {
-         padding-left: 30px;
-         padding-right: 50px;
-         color: white;
-         font-family: myriad;
-      }
-      .nav .image {
-         padding-right: 25px;
-         color: white;
-      }
-      .nav .navcontent {
-         color: white;
-         font-family: myriad;
-         font-size: 15px;
-      }
-      .nav .navcontent:hover {
-         color: gray;
-      }
-      .nav li {
-         padding-right: 30px;
-      }
-      html, body{
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-      }
-      #map-canvas {
-        height: 100%;
-        margin: 0px;
-        padding: 0px;
-      }
-      #data_display_panel{
-        position: absolute;
-        width: 260px;
-        margin-top: 65px;
-        margin-left: 15px;
-        z-index: 1000;
-        padding: 6px 8px;
-        font: 14px/16px Arial, Helvetica, sans-serif;
-        background: white;
-        background: rgba(255,255,255,0.8);
-        box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        border-radius: 5px;
-      }
-      #dataset_panel {
-        position: absolute;
-        margin-top: 310px;
-        margin-left: 15px;
-        z-index: 1000;
-        padding: 6px 8px;
-        font: 14px/16px Arial, Helvetica, sans-serif;
-        background: white;
-        background: rgba(255,255,255,0.8);
-        box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        border-radius: 5px;
-      }
-      #data_legend_outer{
-        position: absolute;
-        margin-top: 520px;
-        margin-left: 15px;
-        z-index: 1000;
-      }
-      #data_legend_panel{
-        padding: 6px 8px;
-        font: 14px/16px Arial, Helvetica, sans-serif;
-        background: white;
-        background: rgba(255,255,255,0.8);
-        box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        border-radius: 5px;
-      }
-      
-    </style>
+    <link rel="stylesheet" type="text/css" href="style_maps.css"/>
     <script>
       var heatmap, map;
       var hostAddr = 'http://115.146.93.135:5984'
@@ -538,7 +457,7 @@
     </nav>
 
     <div id="data_display_panel"><b>Postal Area information</b><br>Hover over a Postal Area</div>
-    <div id="dataset_panel">
+    <div id="dataset_panel_choropleth">
       <b>Data set selection</b><br>
       <input type="radio" onclick="setColorGeneral()" name="choroplethType" value="0" checked> General<br>
       <input type="radio" onclick="setColorPoliceRecord()" name="choroplethType" value="1"> Police record per 100 ppl<br>
