@@ -68,38 +68,29 @@
 
     $(function () {
         $.ajax({
-            url: hostAddr + '/suburb_boundaries/_all_docs',
+            url: hostAddr + '/suburb_boundaries/_all_docs?include_docs=true',
             type: 'get',
             dataType: 'jsonp',
             success: function(data) {
               for(var i = 0; i < data.rows.length; i++){
-                docIDs[i] = data.rows[i].id;
-                var pCodeUrl = hostAddr + '/suburb_boundaries/' + docIDs[i];
-                getPcodeData(pCodeUrl);
+                getPcodeData(data.rows[i]);
               }
             }
          });
 
-        function getPcodeData(pCodeUrl){
-          $.ajax({
-            url: pCodeUrl,
-            type: 'get',
-            dataType: 'jsonp',
-            success: function(data) {
-              pCodeCoordin.push(data.geometry.coordinates);
-              postcode.push(data.properties.postcode);
-              suburbName.push(data.properties.name);
-              policeRecord.push(data.properties.yr2011_12);
-              tweetCount.push(data.properties.tweet_count)
-              population.push(data.properties.population);
-              avgAge.push(data.properties.averageAge);
-              unemployment.push(data.properties.unemployment);
-              avgIncome.push(data.properties.averageIncome);
-              eduPrimary.push(data.properties.eduPrimary);
-              eduSecondary.push(data.properties.eduSecondary);
-              eduTertiery.push(data.properties.eduTertiery);
-            }
-          });
+        function getPcodeData(data){
+          pCodeCoordin.push(data.doc.geometry.coordinates);
+          postcode.push(data.doc.properties.postcode);
+          suburbName.push(data.doc.properties.name);
+          policeRecord.push(data.doc.properties.yr2011_12);
+          tweetCount.push(data.doc.properties.tweet_count)
+          population.push(data.doc.properties.population);
+          avgAge.push(data.doc.properties.averageAge);
+          unemployment.push(data.doc.properties.unemployment);
+          avgIncome.push(data.doc.properties.averageIncome);
+          eduPrimary.push(data.doc.properties.eduPrimary);
+          eduSecondary.push(data.doc.properties.eduSecondary);
+          eduTertiery.push(data.doc.properties.eduTertiery);
         }
     });
 

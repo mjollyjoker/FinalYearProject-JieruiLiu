@@ -12,325 +12,6 @@
   <link rel="stylesheet" type="text/css" href="style_general.css"/>
 </head>
 <body>
-  <script>
-    var hostAddr = 'http://115.146.93.135:5984'
-    var crimeData = [[],[]];
-    var totalKeywords = [];
-    var totalTweets = [];
-    var sentimentData = [[],[]];
-    var crimeCateTitles = ['Crime against person', 'Crime against property', 'Drug offence', 'Other crime'];
-    var removeOthers = false;
-    
-    $(function () {
-      $.ajax({
-            url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_against_person',
-            type: 'get',
-            dataType: 'jsonp',
-            success: function(data) {
-                crimeData[0].push(data.rows[0].value);
-                getAgstPropertyMelb();
-            }
-      });
-
-      function getAgstPropertyMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_against_property',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[0].push(data.rows[0].value);
-                    getDrugOffenceMelb();
-                }
-          });
-      }
-
-      function getDrugOffenceMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_drug_offence',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[0].push(data.rows[0].value);
-                    getOtherCrimeMelb();
-                }
-          });
-      }
-
-      function getOtherCrimeMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_crime_other',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[0].push(data.rows[0].value);
-                    getAgstPersonPhx();
-                }
-          });
-      }
-
-      function getAgstPersonPhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_against_person',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[1].push(data.rows[0].value);
-                    getAgstPropertyPhx();
-                }
-          });
-      }
-
-      function getAgstPropertyPhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_against_property',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[1].push(data.rows[0].value);
-                    getDrugOffencePhx();
-                }
-          });
-      }
-
-      function getDrugOffencePhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_drug_offence',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[1].push(data.rows[0].value);
-                    getOtherCrimePhx();
-                }
-          });
-      }
-
-      function getOtherCrimePhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_crime_other',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    crimeData[1].push(data.rows[0].value);
-                    getAllKeywordsMelb();
-                }
-          });
-      }
-
-      function getAllKeywordsMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    totalKeywords.push(data.rows[0].value);
-                    for (var i = 0; i < crimeData[0].length; i++){
-                        crimeData[0][i] = Number((crimeData[0][i]/data.rows[0].value*100).toFixed(2));
-                    }
-                    getAllKeywordsPhx();
-                }
-          });
-      }
-
-      function getAllKeywordsPhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    totalKeywords.push(data.rows[0].value);
-                    for (var i = 0; i < crimeData[1].length; i++){
-                        crimeData[1][i] = Number((crimeData[1][i]/data.rows[0].value*100).toFixed(2));
-                    }
-                    getTotalTweetsMelb();
-                }
-          });
-      }
-
-      function getTotalTweetsMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_all_docs?limit=0',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    totalTweets.push(data.total_rows);
-                    getTotalTweetsPhx();
-                }
-          });
-      }
-
-      function getTotalTweetsPhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_all_docs?limit=0',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    totalTweets.push(data.total_rows);
-                    getSentimentMelb();
-                }
-          });
-      }
-
-      function getSentimentMelb(){
-          $.ajax({
-                url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords?group_level=1',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    for (var i = 0; i < data.rows.length; i ++){
-                        sentimentData[0].push(Number((data.rows[i].value/totalKeywords[0]*100).toFixed(2)));
-                    }
-                    getSentimentPhx();
-                }
-          });
-      }
-
-      function getSentimentPhx(){
-          $.ajax({
-                url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords?group_level=1',
-                type: 'get',
-                dataType: 'jsonp',
-                success: function(data) {
-                    for (var i = 0; i < data.rows.length; i ++){
-                        sentimentData[1].push(Number((data.rows[i].value/totalKeywords[1]*100).toFixed(2)));
-                    }
-                    drawMainChart();
-                }
-          });
-      }
-
-      function drawMainChart(){
-          $('#container').highcharts({
-                chart: {
-                    type: 'column'
-                },
-                title: {
-                    text: 'Crime tweets percentage'
-                },
-                xAxis: {
-                    categories: ['Melbourne', 'Phoenix']
-                },
-                yAxis: {
-                    min: 0,
-                    title: {
-                        text: 'Melbourne vs Phoenix'
-                    }
-                },
-                tooltip: {
-                    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
-                    shared: true
-                },
-                plotOptions: {
-                    column: {
-                        stacking: 'percent'
-                    }
-                },
-                series: [{
-                    name: 'Other Tweets',
-                    data: [Number(((totalTweets[0]-totalKeywords[0])/totalTweets[0]*100).toFixed(2)), Number(((totalTweets[1]-totalKeywords[1])/totalTweets[1]*100).toFixed(2))]
-                }, {
-                    name: 'Crime related Tweets',
-                    data: [Number((totalKeywords[0]/totalTweets[0]*100).toFixed(2)), Number((totalKeywords[1]/totalTweets[1]*100).toFixed(2))]
-                }]
-          });
-      }
-
-      $('#sentiment').click(function(){
-          $('#container0').highcharts({
-                chart: {
-                    type: 'column'
-                },
-                title: {
-                    text: 'Crime related sentiment compare'
-                },
-                xAxis: {
-                    categories: ['Negative', 'Neutral', 'Positive']
-                },
-                yAxis: {
-                    allowDecimals: false,
-                    min: 0,
-                    title: {
-                        text: 'Sentiment'
-                    }
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<b>' + this.x + '</b><br/>' +
-                            this.series.name + ': ' + this.y + '%<br/>';
-                    }
-                },
-                plotOptions: {
-                    column: {
-                        stacking: 'normal'
-                    }
-                },
-                series: [{
-                    name: 'Melbourne',
-                    data: sentimentData[0],
-                    stack: 'male'
-                }, {
-                    name: 'Phoenix',
-                    data: sentimentData[1],
-                    stack: 'male1'
-                }]
-            });
-      });
-
-      $('#categories').click(function(){
-        drawCrimeCategoryChart(crimeCateTitles, crimeData[0], crimeData[1]);
-      });
-    });
-
-    function drawCrimeCategoryChart(titleArray, data1, data2){
-            $('#container1').highcharts({
-                chart: {
-                    type: 'column'
-                },
-                title: {
-                    text: 'Crime category compare'
-                },
-                xAxis: {
-                    categories: titleArray
-                },
-                yAxis: {
-                    allowDecimals: false,
-                    min: 0,
-                    title: {
-                        text: 'Sentiment'
-                    }
-                },
-                tooltip: {
-                    formatter: function () {
-                        return '<b>' + this.x + '</b><br/>' +
-                            this.series.name + ': ' + this.y + '<br/>';
-                    }
-                },
-                plotOptions: {
-                    column: {
-                        stacking: 'normal'
-                    }
-                },
-                series: [{
-                    name: 'Melbourne',
-                    data: data1,
-                    stack: 'male'
-                }, {
-                    name: 'Phoenix',
-                    data: data2,
-                    stack: 'male1'
-                }]
-            });
-    }
-
-    function removeOther(){
-          removeOthers = !removeOthers;
-          if(removeOthers){
-            drawCrimeCategoryChart(crimeCateTitles.slice(0,3), crimeData[0].slice(0,3), crimeData[1].slice(0,3));
-          }else{
-            drawCrimeCategoryChart(crimeCateTitles, crimeData[0], crimeData[1]);
-          }
-    }
-  </script>
-
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -349,7 +30,7 @@
       </div>
     </nav>
 
-   <div class="main">
+    <div class="main">
       <div class="lefttab">
          <ul id="myTab" class="nav nav-pills nav-stacked">
             <li id="mainChart" class="active"><a href="#tab_main" data-toggle="tab"><span class="figure">Summary</span></a></li>
@@ -369,7 +50,324 @@
           <input type="checkbox" onclick="removeOther()" name="removeOther" value="show"><span style="color: white">Remove other crime</span>
         </div>
       </div>
-   </div>
+    </div>
+    <script>
+      var hostAddr = 'http://115.146.93.135:5984'
+      var crimeData = [[],[]];
+      var totalKeywords = [];
+      var totalTweets = [];
+      var sentimentData = [[],[]];
+      var crimeCateTitles = ['Crime against person', 'Crime against property', 'Drug offence', 'Other crime'];
+      var removeOthers = false;
+      
+      $(function () {
+        $.ajax({
+              url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_against_person',
+              type: 'get',
+              dataType: 'jsonp',
+              success: function(data) {
+                  crimeData[0].push(data.rows[0].value);
+                  getAgstPropertyMelb();
+              }
+        });
 
+        function getAgstPropertyMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_against_property',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[0].push(data.rows[0].value);
+                      getDrugOffenceMelb();
+                  }
+            });
+        }
+
+        function getDrugOffenceMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_drug_offence',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[0].push(data.rows[0].value);
+                      getOtherCrimeMelb();
+                  }
+            });
+        }
+
+        function getOtherCrimeMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords_crime_other',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[0].push(data.rows[0].value);
+                      getAgstPersonPhx();
+                  }
+            });
+        }
+
+        function getAgstPersonPhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_against_person',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[1].push(data.rows[0].value);
+                      getAgstPropertyPhx();
+                  }
+            });
+        }
+
+        function getAgstPropertyPhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_against_property',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[1].push(data.rows[0].value);
+                      getDrugOffencePhx();
+                  }
+            });
+        }
+
+        function getDrugOffencePhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_drug_offence',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[1].push(data.rows[0].value);
+                      getOtherCrimePhx();
+                  }
+            });
+        }
+
+        function getOtherCrimePhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords_crime_other',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      crimeData[1].push(data.rows[0].value);
+                      getAllKeywordsMelb();
+                  }
+            });
+        }
+
+        function getAllKeywordsMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      totalKeywords.push(data.rows[0].value);
+                      for (var i = 0; i < crimeData[0].length; i++){
+                          crimeData[0][i] = Number((crimeData[0][i]/data.rows[0].value*100).toFixed(2));
+                      }
+                      getAllKeywordsPhx();
+                  }
+            });
+        }
+
+        function getAllKeywordsPhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      totalKeywords.push(data.rows[0].value);
+                      for (var i = 0; i < crimeData[1].length; i++){
+                          crimeData[1][i] = Number((crimeData[1][i]/data.rows[0].value*100).toFixed(2));
+                      }
+                      getTotalTweetsMelb();
+                  }
+            });
+        }
+
+        function getTotalTweetsMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_all_docs?limit=0',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      totalTweets.push(data.total_rows);
+                      getTotalTweetsPhx();
+                  }
+            });
+        }
+
+        function getTotalTweetsPhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_all_docs?limit=0',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      totalTweets.push(data.total_rows);
+                      getSentimentMelb();
+                  }
+            });
+        }
+
+        function getSentimentMelb(){
+            $.ajax({
+                  url: hostAddr + '/unfiltered_tweets/_design/keywords/_view/allKeywords?group_level=1',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      for (var i = 0; i < data.rows.length; i ++){
+                          sentimentData[0].push(Number((data.rows[i].value/totalKeywords[0]*100).toFixed(2)));
+                      }
+                      getSentimentPhx();
+                  }
+            });
+        }
+
+        function getSentimentPhx(){
+            $.ajax({
+                  url: hostAddr + '/phoenix_tweets/_design/keywords/_view/allKeywords?group_level=1',
+                  type: 'get',
+                  dataType: 'jsonp',
+                  success: function(data) {
+                      for (var i = 0; i < data.rows.length; i ++){
+                          sentimentData[1].push(Number((data.rows[i].value/totalKeywords[1]*100).toFixed(2)));
+                      }
+                      drawMainChart();
+                  }
+            });
+        }
+
+        function drawMainChart(){
+            $('#container').highcharts({
+                  chart: {
+                      type: 'column'
+                  },
+                  title: {
+                      text: 'Crime tweets percentage'
+                  },
+                  xAxis: {
+                      categories: ['Melbourne', 'Phoenix']
+                  },
+                  yAxis: {
+                      min: 0,
+                      title: {
+                          text: 'Melbourne vs Phoenix'
+                      }
+                  },
+                  tooltip: {
+                      pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                      shared: true
+                  },
+                  plotOptions: {
+                      column: {
+                          stacking: 'percent'
+                      }
+                  },
+                  series: [{
+                      name: 'Other Tweets',
+                      data: [Number(((totalTweets[0]-totalKeywords[0])/totalTweets[0]*100).toFixed(2)), Number(((totalTweets[1]-totalKeywords[1])/totalTweets[1]*100).toFixed(2))]
+                  }, {
+                      name: 'Crime related Tweets',
+                      data: [Number((totalKeywords[0]/totalTweets[0]*100).toFixed(2)), Number((totalKeywords[1]/totalTweets[1]*100).toFixed(2))]
+                  }]
+            });
+        }
+
+        $('#sentiment').click(function(){
+            $('#container0').highcharts({
+                  chart: {
+                      type: 'column'
+                  },
+                  title: {
+                      text: 'Crime related sentiment compare'
+                  },
+                  xAxis: {
+                      categories: ['Negative', 'Neutral', 'Positive']
+                  },
+                  yAxis: {
+                      allowDecimals: false,
+                      min: 0,
+                      title: {
+                          text: 'Sentiment'
+                      }
+                  },
+                  tooltip: {
+                      formatter: function () {
+                          return '<b>' + this.x + '</b><br/>' +
+                              this.series.name + ': ' + this.y + '%<br/>';
+                      }
+                  },
+                  plotOptions: {
+                      column: {
+                          stacking: 'normal'
+                      }
+                  },
+                  series: [{
+                      name: 'Melbourne',
+                      data: sentimentData[0],
+                      stack: 'male'
+                  }, {
+                      name: 'Phoenix',
+                      data: sentimentData[1],
+                      stack: 'male1'
+                  }]
+              });
+        });
+
+        $('#categories').click(function(){
+          drawCrimeCategoryChart(crimeCateTitles, crimeData[0], crimeData[1]);
+        });
+      });
+
+      function drawCrimeCategoryChart(titleArray, data1, data2){
+              $('#container1').highcharts({
+                  chart: {
+                      type: 'column'
+                  },
+                  title: {
+                      text: 'Crime category compare'
+                  },
+                  xAxis: {
+                      categories: titleArray
+                  },
+                  yAxis: {
+                      allowDecimals: false,
+                      min: 0,
+                      title: {
+                          text: 'Sentiment'
+                      }
+                  },
+                  tooltip: {
+                      formatter: function () {
+                          return '<b>' + this.x + '</b><br/>' +
+                              this.series.name + ': ' + this.y + '<br/>';
+                      }
+                  },
+                  plotOptions: {
+                      column: {
+                          stacking: 'normal'
+                      }
+                  },
+                  series: [{
+                      name: 'Melbourne',
+                      data: data1,
+                      stack: 'male'
+                  }, {
+                      name: 'Phoenix',
+                      data: data2,
+                      stack: 'male1'
+                  }]
+              });
+      }
+
+      function removeOther(){
+            removeOthers = !removeOthers;
+            if(removeOthers){
+              drawCrimeCategoryChart(crimeCateTitles.slice(0,3), crimeData[0].slice(0,3), crimeData[1].slice(0,3));
+            }else{
+              drawCrimeCategoryChart(crimeCateTitles, crimeData[0], crimeData[1]);
+            }
+      }
+    </script>
 </body>
 </html>			
